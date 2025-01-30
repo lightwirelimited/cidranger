@@ -87,6 +87,7 @@ type Ranger interface {
 	Insert(entry RangerEntry) error
 	Remove(network net.IPNet) (RangerEntry, error)
 	Contains(ip net.IP) (bool, error)
+	LPM(ip net.IP) (RangerEntry, error)
 	ContainingNetworks(ip net.IP) ([]RangerEntry, error)
 	CoveredNetworks(network net.IPNet) ([]RangerEntry, error)
 	Len() int

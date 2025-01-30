@@ -106,6 +106,16 @@ func (p *prefixTrie) Contains(ip net.IP) (bool, error) {
 	return p.contains(nn)
 }
 
+// LPM returns RangerEntry of the longest possible prefix match in any
+// of the inserted networks.
+func (p *prefixTrie) LPM(ip net.IP) (RangerEntry, error) {
+	nn := rnet.NewNetworkNumber(ip)
+	if nn == nil {
+		return nil, ErrInvalidNetworkNumberInput
+	}
+	return p.lpm(nn)
+}
+
 // ContainingNetworks returns the list of RangerEntry(s) the given ip is
 // contained in in ascending prefix order.
 func (p *prefixTrie) ContainingNetworks(ip net.IP) ([]RangerEntry, error) {
@@ -145,6 +155,30 @@ func (p *prefixTrie) String() string {
 		p.targetBitPosition(), p.hasEntry(), strings.Join(children, ""))
 }
 
+func (p *prefixTrie) lpm(number rnet.NetworkNumber) (RangerEntry, error) {
+	if !p.network.Contains(number) {
+		return nil, nil
+	}
+	var entry RangerEntry = nil
+	if p.hasEntry() {
+		entry = p.entry
+		//return p.entry, nil
+	}
+	if p.targetBitPosition() < 0 {
+		return entry, nil
+	}
+	bit, err := p.targetBitFromIP(number)
+	if err != nil {
+		return entry, err
+	}
+	child := p.children[bit]
+	if child != nil {
+		if childEntry, err := child.lpm(number); err == nil && childEntry != nil {
+			return childEntry, nil
+		}
+	}
+	return entry, nil
+}
 func (p *prefixTrie) contains(number rnet.NetworkNumber) (bool, error) {
 	if !p.network.Contains(number) {
 		return false, nil

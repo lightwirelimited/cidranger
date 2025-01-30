@@ -73,6 +73,28 @@ func (b *bruteRanger) Contains(ip net.IP) (bool, error) {
 	return false, nil
 }
 
+func (b *bruteRanger) LPM(ip net.IP) (RangerEntry, error) {
+	networks, err := b.ContainingNetworks(ip)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(networks) == 0 {
+		return nil, nil
+	}
+
+	var best RangerEntry = networks[0]
+	var bestMaskSize int = 0
+
+	for _, network := range networks {
+		_, maskSize := network.Network().Mask.Size()
+		if maskSize > bestMaskSize {
+			best = network
+		}
+	}
+	return best, nil
+}
+
 // ContainingNetworks returns all RangerEntry(s) that given ip contained in.
 func (b *bruteRanger) ContainingNetworks(ip net.IP) ([]RangerEntry, error) {
 	entries, err := b.getEntriesByVersion(ip)

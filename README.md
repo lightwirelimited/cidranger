@@ -51,6 +51,11 @@ To test if given IP is contained in constructed ranger,
 contains, err = ranger.Contains(net.ParseIP("128.168.1.0")) // returns true, nil
 contains, err = ranger.Contains(net.ParseIP("192.168.2.0")) // returns false, nil
 ```
+To get the network resulting from a longest prefix match lookup if given IP is contained in constructed ranger,
+```go
+entry, err = ranger.Contains(net.ParseIP("128.168.1.0")) // returns network1 RangerEntry, nil
+entry, err = ranger.Contains(net.ParseIP("192.168.2.0")) // returns nil, nil
+```
 To get all the networks given is contained in,
 ```go
 containingNetworks, err = ranger.ContainingNetworks(net.ParseIP("128.168.1.0"))
